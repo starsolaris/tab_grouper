@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="0.1" id="http://someurl">
+<widget xmlns="http://www.w3.org/ns/widgets" version="0.1" id="https://github.com/starsolaris/tab_grouper">
 	<name>Tab Grouper</name>
 	<description>Tab Grouper groupes all tabs by site url. Opera 12 only.</description>
 	<icon src="icons/tab.png"/>
-  	<author href="someurl" email="itmyaddress@gmail.com">Andrey Starostin</author>
+  	<author href="https://github.com/starsolaris/tab_grouper" email="itmyaddress@gmail.com">Andrey Starostin</author>
 </widget>
