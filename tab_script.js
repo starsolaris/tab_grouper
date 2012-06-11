@@ -14,6 +14,7 @@ function Tab()
 {
 	var _self = this;
 	this._groupButton = null;
+	this._closeButton = null;
 
 	this.onLoad = function()
 	{
@@ -24,15 +25,17 @@ function Tab()
 				backgroundColor: '#CC0000',
 				color: '#FFFFFF'
 			},
-			onclick: function() {
-				_self.onGroupClick.call(_self);
+			onclick: function()
+			{
+				_self.closeDubplicateTabs.call(_self);
+				_self.groupSimilarTabs.call(_self);
 			}
 		});
 
 		opera.contexts.toolbar.addItem(_self._groupButton);
 	};
 
-	this.onGroupClick = function()
+	this.groupSimilarTabs = function()
 	{
 		var i = 0;
 		var similar = _self.getSimilar();
@@ -68,6 +71,31 @@ function Tab()
 				}
 			}
 		}
+	};
+
+	this.closeDubplicateTabs = function()
+	{
+		var urls = {};
+		var tabs = opera.extension.tabs.getAll();
+		var closedNumber = 0;
+		for (var i = 0; i < tabs.length; i++)
+		{
+			var tab = tabs[i];
+			if (!tab.browserWindow)
+			{
+				continue;
+			}
+
+			if (!urls[tab.url])
+			{
+				urls[tab.url] = true;
+			} else {
+				closedNumber++;
+				tab.close();
+			}
+		}
+
+		// _self._closeButton.badge.textContent = closedNumber;
 	};
 
 	this.getSimilar = function()

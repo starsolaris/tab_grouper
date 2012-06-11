@@ -1,9 +1,13 @@
 # Tab Grouper
 
-Tab Grouper is a extension for Opera that groupes all tabs by site url.
+Tab Grouper is a easy way to organize a lot of tabs by grouping them by site url .
+Tab Grouper is very useful when you keep many opened tabs at the same time.
+Simply click on the Tab Grouper button to group all of your open tabs.
+
 Opera 12 only.
 
 
 ## Features
 
-* Creates groups of tabs on the basis of their urls
+* Sorts tabs by site url and creates groups of them
+* Close duplicates tabs by site url
