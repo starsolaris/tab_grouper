@@ -14,7 +14,6 @@ function Tab()
 {
 	var _self = this;
 	this._groupButton = null;
-	this._closeButton = null;
 
 	this.onLoad = function()
 	{
@@ -27,6 +26,13 @@ function Tab()
 			},
 			onclick: function()
 			{
+				// opera 12 or greater has necessary API
+				if (typeof opera.extension.tabs.getAll !== "function"
+					|| typeof opera.extension.tabGroups.getAll !== "function")
+				{
+					return;
+				}
+
 				_self.closeDubplicateTabs.call(_self);
 				_self.groupSimilarTabs.call(_self);
 			}
@@ -35,18 +41,28 @@ function Tab()
 		opera.contexts.toolbar.addItem(_self._groupButton);
 	};
 
+	/**
+	 * group similar tabs
+	 */
 	this.groupSimilarTabs = function()
 	{
 		var i = 0;
+		var tab;
 		var similar = _self.getSimilar();
 		var tabGroups = opera.extension.tabGroups.getAll();
 		for (i = 0; i < tabGroups.length; i++)
 		{
 			var tabGroup = tabGroups[i];
-			var groupTabs = tabGroup.tabs.getAll();
-			if (groupTabs.length > 0)
+			var tabs = tabGroup.tabs.getAll();
+			if (tabs.length > 0)
 			{
-				similar[this._getSign(groupTabs[0].url)].group = tabGroup;
+				tab = tabs[0];
+				if (!tab.browserWindow)
+				{
+					continue;
+				}
+
+				similar[this._getSign(tab.url)].group = tabGroup;
 			}
 		}
 
@@ -73,6 +89,9 @@ function Tab()
 		}
 	};
 
+	/**
+	 * close dublicate tabs
+	 */
 	this.closeDubplicateTabs = function()
 	{
 		var urls = {};
@@ -94,10 +113,13 @@ function Tab()
 				tab.close();
 			}
 		}
-
-		// _self._closeButton.badge.textContent = closedNumber;
 	};
 
+	/**
+	 * get list of similar tabs
+	 *
+	 * @return {Object}
+	 */
 	this.getSimilar = function()
 	{
 		var similar = {};
@@ -121,11 +143,22 @@ function Tab()
 			}
 			similar[sign].list.push(tab);
 		}
+
 		return similar;
 	};
 
+	/**
+	 * get sign for grouping from url
+	 *
+	 * @param {String} url
+	 * @return {String}
+	 * @private
+	 */
 	this._getSign = function(url)
 	{
+		if (typeof "url" !== "string")
+			url = "";
+
 		var sign = "";
 		var match = [];
 		if ((match = url.match(/https?:\/\/([^\/]*)\//)) != null)
