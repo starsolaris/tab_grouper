@@ -1,22 +1,53 @@
-(function() {
+/**
+ * @description Tab Grouper is a extension for Opera that groupes all tabs by site url
+ * @author Andrey Starostin
+ */
 
-var tab = new Tab();
+(function() {
+"use strict";
+
+var tabGrouper = new TabGrouper();
 window.addEventListener(
 	"load",
 	function()
 	{
-		tab.onLoad.call(tab);
+		tabGrouper.onLoad.call(tabGrouper);
 	},
 	false
 );
 
-function Tab()
+function log(message)
+{
+	opera.postError(message);
+}
+
+function TabGrouper()
 {
 	var _self = this;
 	this._groupButton = null;
 
+	/**
+	 *  list of options
+	 * @type {Object}
+	 * @private
+	 */
+	this._preferences = {
+		closeDuplicates: false,
+		groupBySecondDomain: false, // *.second.com, second.com
+		autoGroup: false,
+		openNewTabInsideCurrentGroup: false,
+		disableToolbarButton: false
+	};
+
 	this.onLoad = function()
 	{
+		// opera 12 or greater has necessary API
+		if (typeof opera.extension.tabs.getAll !== "function"
+			|| typeof opera.extension.tabGroups.getAll !== "function")
+		{
+			return;
+		}
+
 		this._groupButton = opera.contexts.toolbar.createItem({
 			title: "Tab Grouper",
 			icon: "icons/tab_group_button.png",
@@ -26,13 +57,6 @@ function Tab()
 			},
 			onclick: function()
 			{
-				// opera 12 or greater has necessary API
-				if (typeof opera.extension.tabs.getAll !== "function"
-					|| typeof opera.extension.tabGroups.getAll !== "function")
-				{
-					return;
-				}
-
 				_self.closeDubplicateTabs.call(_self);
 				_self.groupSimilarTabs.call(_self);
 			}
