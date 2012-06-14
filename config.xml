@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="1.1" id="https://github.com/starsolaris/tab_grouper">
-	<name>Tab Grouper</name>
-	<description>Tab Grouper is a easy way to organize a lot of tabs by grouping them by site url. Opera 12 only.</description>
-	<icon src="icons/tab.png"/>
-  	<author href="https://github.com/starsolaris/tab_grouper" email="itmyaddress@gmail.com">Andrey Starostin</author>
+<?xml version='1.0' encoding='utf-8'?>
+<widget xmlns="http://www.w3.org/ns/widgets" version="1.2" id="https://addons.opera.com/extensions/details/tab-grouper/">
+  <name>Tab Grouper</name>
+  <icon src="icons/tab.png"/>
+  <author href="https://github.com/starsolaris/tab_grouper" email="itmyaddress@gmail.com">Andrey Starostin</author>
+  <update-description href="https://extension-updates.opera.com/api/w3c-wd1/update/581a4dbd-cf3d-4774-9fce-3e24c9ddf2ee/"/>
+  <description xml:lang="en">Tab Grouper is a easy way to organize a lot of tabs by grouping them by site url. Opera 12 only.</description>
+  <description xml:lang="ru">Tab Grouper - это простой способ для сортировки большого количества вкладок группируя их по адресу сайта. Только для Opera 12.</description>
 </widget>
