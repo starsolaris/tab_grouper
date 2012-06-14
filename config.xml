@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="1.0" id="https://github.com/starsolaris/tab_grouper">
+<widget xmlns="http://www.w3.org/ns/widgets" version="1.1" id="https://github.com/starsolaris/tab_grouper">
 	<name>Tab Grouper</name>
 	<description>Tab Grouper is a easy way to organize a lot of tabs by grouping them by site url. Opera 12 only.</description>
 	<icon src="icons/tab.png"/>
