@@ -4,194 +4,223 @@
  */
 
 (function() {
-"use strict";
+	"use strict";
 
-var tabGrouper = new TabGrouper();
-window.addEventListener(
-	"load",
-	function()
-	{
-		tabGrouper.onLoad.call(tabGrouper);
-	},
-	false
-);
-
-function log(message)
-{
-	opera.postError(message);
-}
-
-function TabGrouper()
-{
-	var _self = this;
-	this._groupButton = null;
-
-	/**
-	 *  list of options
-	 * @type {Object}
-	 * @private
-	 */
-	this._preferences = {
-		closeDuplicates: false,
-		groupBySecondDomain: false, // *.second.com, second.com
-		autoGroup: false,
-		openNewTabInsideCurrentGroup: false,
-		disableToolbarButton: false
-	};
-
-	this.onLoad = function()
-	{
-		// opera 12 or greater has necessary API
-		if (typeof opera.extension.tabs.getAll !== "function"
-			|| typeof opera.extension.tabGroups.getAll !== "function")
+	var tabGrouper = new TabGrouper();
+	window.addEventListener(
+		"load",
+		function()
 		{
-			return;
-		}
+			tabGrouper.onLoad.call(tabGrouper);
+		},
+		false
+	);
 
-		this._groupButton = opera.contexts.toolbar.createItem({
-			title: "Tab Grouper",
-			icon: "icons/tab_group_button.png",
-			badge: {
-				backgroundColor: '#CC0000',
-				color: '#FFFFFF'
-			},
-			onclick: function()
+	function log(message)
+	{
+		opera.postError(message);
+	}
+
+	function TabGrouper()
+	{
+		var _self = this;
+		this._groupButton = null;
+
+		/**
+		 *  list of options
+		 * @type {Object}
+		 * @private
+		 */
+		this._preferences = {
+			closeDuplicates: false,
+			groupBySecondLevelDomain: false, // *.second.com, second.com
+			autoGroup: false,
+			openNewTabInsideCurrentGroup: false,
+			hideToolbarButton: false
+		};
+
+		this.onLoad = function()
+		{
+			// opera 12 or greater has necessary API
+			if (typeof opera.extension.tabs.getAll !== "function"
+				|| typeof opera.extension.tabGroups.getAll !== "function")
 			{
-				_self.closeDubplicateTabs.call(_self);
-				_self.groupSimilarTabs.call(_self);
+				return;
 			}
-		});
 
-		opera.contexts.toolbar.addItem(_self._groupButton);
-	};
+			this._loadPreferences();
 
-	/**
-	 * group similar tabs
-	 */
-	this.groupSimilarTabs = function()
-	{
-		var i = 0;
-		var tab;
-		var similar = _self.getSimilar();
-		var tabGroups = opera.extension.tabGroups.getAll();
-		for (i = 0; i < tabGroups.length; i++)
-		{
-			var tabGroup = tabGroups[i];
-			var tabs = tabGroup.tabs.getAll();
-			if (tabs.length > 0)
+			if (!this._preferences.hideToolbarButton)
 			{
-				tab = tabs[0];
+				this._groupButton = opera.contexts.toolbar.createItem({
+					title: "Tab Grouper",
+					icon: "icons/tab_group_button.png",
+					badge: {
+						backgroundColor: '#CC0000',
+						color: '#FFFFFF'
+					},
+					onclick: function()
+					{
+						_self._loadPreferences();
+
+						if (_self._preferences.closeDuplicates)
+							_self.closeDubplicateTabs.call(_self);
+
+						_self.groupSimilarTabs.call(_self);
+					}
+				});
+			}
+
+			opera.contexts.toolbar.addItem(_self._groupButton);
+		};
+
+		this._loadPreferences = function()
+		{
+			for (var preference in this._preferences)
+			{
+				if (!this._preferences.hasOwnProperty(preference))
+					continue;
+
+				if (typeof widget.preferences[preference] !== "undefined")
+				{
+					this._preferences[preference] = (widget.preferences.getItem(preference) == "true");
+				}
+			}
+		};
+
+		/**
+		 * group similar tabs
+		 */
+		this.groupSimilarTabs = function()
+		{
+			var i = 0;
+			var tab;
+			var similar = _self.getSimilar();
+			var tabGroups = opera.extension.tabGroups.getAll();
+			for (i = 0; i < tabGroups.length; i++)
+			{
+				var tabGroup = tabGroups[i];
+				var tabs = tabGroup.tabs.getAll();
+				if (tabs.length > 0)
+				{
+					tab = tabs[0];
+					if (!tab.browserWindow)
+					{
+						continue;
+					}
+
+					similar[this._getSign(tab.url)].group = tabGroup;
+				}
+			}
+
+			for (var sign in similar)
+			{
+				if (!similar.hasOwnProperty(sign))
+					continue;
+
+				var element = similar[sign];
+				if (element.list.length > 1)
+				{
+					if (!element.group)
+					{
+						opera.extension.tabGroups.create(element.list, {collapsed: true}, element.list[0]);
+					} else {
+						for (i = 0; i < element.list.length; i++)
+						{
+							tab = element.list[i];
+							if (!tab.tabGroup)
+								element.group.insert(tab);
+						}
+					}
+				}
+			}
+		};
+
+		/**
+		 * close dublicate tabs
+		 */
+		this.closeDubplicateTabs = function()
+		{
+			var urls = {};
+			var tabs = opera.extension.tabs.getAll();
+			var closedNumber = 0;
+			for (var i = 0; i < tabs.length; i++)
+			{
+				var tab = tabs[i];
 				if (!tab.browserWindow)
 				{
 					continue;
 				}
 
-				similar[this._getSign(tab.url)].group = tabGroup;
-			}
-		}
-
-		for (var sign in similar)
-		{
-			if (!similar.hasOwnProperty(sign))
-				continue;
-
-			var element = similar[sign];
-			if (element.list.length > 1)
-			{
-				if (!element.group)
+				if (!urls[tab.url])
 				{
-					opera.extension.tabGroups.create(element.list, {collapsed: true}, element.list[0]);
+					urls[tab.url] = true;
 				} else {
-					for (i = 0; i < element.list.length; i++)
-					{
-						tab = element.list[i];
-						if (!tab.tabGroup)
-							element.group.insert(tab);
-					}
+					closedNumber++;
+					tab.close();
 				}
 			}
-		}
-	};
+		};
 
-	/**
-	 * close dublicate tabs
-	 */
-	this.closeDubplicateTabs = function()
-	{
-		var urls = {};
-		var tabs = opera.extension.tabs.getAll();
-		var closedNumber = 0;
-		for (var i = 0; i < tabs.length; i++)
+		/**
+		 * get list of similar tabs
+		 *
+		 * @return {Object}
+		 */
+		this.getSimilar = function()
 		{
-			var tab = tabs[i];
-			if (!tab.browserWindow)
+			var similar = {};
+			var tabs = opera.extension.tabs.getAll();
+			for (var i = 0; i < tabs.length; i++)
 			{
-				continue;
+				var tab = tabs[i];
+				if (!tab.browserWindow)
+				{
+					continue;
+				}
+
+				var sign = this._getSign(tab.url);
+
+				if (!similar[sign])
+				{
+					similar[sign] = {
+						group: null,
+						list: []
+					};
+				}
+				similar[sign].list.push(tab);
 			}
 
-			if (!urls[tab.url])
-			{
-				urls[tab.url] = true;
-			} else {
-				closedNumber++;
-				tab.close();
-			}
-		}
-	};
+			return similar;
+		};
 
-	/**
-	 * get list of similar tabs
-	 *
-	 * @return {Object}
-	 */
-	this.getSimilar = function()
-	{
-		var similar = {};
-		var tabs = opera.extension.tabs.getAll();
-		for (var i = 0; i < tabs.length; i++)
+		/**
+		 * get sign for grouping from url
+		 *
+		 * @param {String} url
+		 * @return {String}
+		 * @private
+		 */
+		this._getSign = function(url)
 		{
-			var tab = tabs[i];
-			if (!tab.browserWindow)
+			if (typeof "url" !== "string")
+				url = "";
+
+			var sign = "";
+			var match = [];
+			var regexp = /(https?|ftp|file):\/\/([^\/]*)\//;
+			if (this._preferences.groupBySecondLevelDomain)
 			{
-				continue;
+				//regexp = /(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]/i;
+				regexp = /(https?|ftp|file):\/\/([^\/]*\.)?([^\/]*\.[^\/]*)\//;
+			}
+			if ((match = url.match(regexp)) != null)
+			{
+				sign = match[match.length - 1];
 			}
 
-			var sign = this._getSign(tab.url);
-
-			if (!similar[sign])
-			{
-				similar[sign] = {
-					group: null,
-					list: []
-				};
-			}
-			similar[sign].list.push(tab);
-		}
-
-		return similar;
-	};
-
-	/**
-	 * get sign for grouping from url
-	 *
-	 * @param {String} url
-	 * @return {String}
-	 * @private
-	 */
-	this._getSign = function(url)
-	{
-		if (typeof "url" !== "string")
-			url = "";
-
-		var sign = "";
-		var match = [];
-		if ((match = url.match(/https?:\/\/([^\/]*)\//)) != null)
-		{
-			sign = match[1];
-		}
-
-		return sign;
-	};
-}
+			return sign;
+		};
+	}
 
 })();
