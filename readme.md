@@ -17,6 +17,8 @@ Opera 12 only.
 https://addons.opera.com/ru/extensions/details/tab-grouper/
 
 ### Change History
-v1.2
+
+####v1.2
+
 1. add option for "Close duplicate tabs"
 2. add option for "Group by second-level domain"
