@@ -7,14 +7,9 @@
 	"use strict";
 
 	var tabGrouper = new TabGrouper();
-	window.addEventListener(
-		"load",
-		function()
-		{
+	window.addEventListener("load", function() {
 			tabGrouper.onLoad.call(tabGrouper);
-		},
-		false
-	);
+	}, false);
 
 	function log(message)
 	{
@@ -34,7 +29,7 @@
 		this._preferences = {
 			closeDuplicates: false,
 			groupBySecondLevelDomain: false, // *.second.com, second.com
-			autoGroup: false,
+			autoGrouping: false,
 			openNewTabInsideCurrentGroup: false,
 			hideToolbarButton: false
 		};
@@ -88,6 +83,22 @@
 			}
 		};
 
+		this.ungroup = function(tabGroup)
+		{
+			var tabs = tabGroup.tabs.getAll();
+
+			for (var j = 0; j < tabs.length; j++)
+			{
+				var tab = tabs[j];
+				if (typeof tab.browserWindow == "undefined" || typeof tabGroup.browserWindow == "undefined")
+				{
+					continue;
+				}
+
+				tab.browserWindow.insert(tab, tabGroup);
+			}
+		};
+
 		/**
 		 * group similar tabs
 		 */
@@ -95,24 +106,16 @@
 		{
 			var i = 0;
 			var tab;
-			var similar = _self.getSimilar();
+
 			var tabGroups = opera.extension.tabGroups.getAll();
 			for (i = 0; i < tabGroups.length; i++)
 			{
 				var tabGroup = tabGroups[i];
-				var tabs = tabGroup.tabs.getAll();
-				if (tabs.length > 0)
-				{
-					tab = tabs[0];
-					if (!tab.browserWindow)
-					{
-						continue;
-					}
-
-					similar[this._getSign(tab.url)].group = tabGroup;
-				}
+				this.ungroup(tabGroup);
 			}
 
+
+			var similar = _self.getSimilar();
 			for (var sign in similar)
 			{
 				if (!similar.hasOwnProperty(sign))
@@ -124,13 +127,14 @@
 					if (!element.group)
 					{
 						opera.extension.tabGroups.create(element.list, {collapsed: true}, element.list[0]);
-					} else {
-						for (i = 0; i < element.list.length; i++)
-						{
-							tab = element.list[i];
-							if (!tab.tabGroup)
-								element.group.insert(tab);
-						}
+						continue;
+					}
+
+					for (i = 0; i < element.list.length; i++)
+					{
+						tab = element.list[i];
+						if (!tab.tabGroup)
+							element.group.insert(tab);
 					}
 				}
 			}
@@ -143,20 +147,18 @@
 		{
 			var urls = {};
 			var tabs = opera.extension.tabs.getAll();
-			var closedNumber = 0;
 			for (var i = 0; i < tabs.length; i++)
 			{
 				var tab = tabs[i];
-				if (!tab.browserWindow)
+				if (typeof tab.browserWindow == "undefined")
 				{
 					continue;
 				}
 
-				if (!urls[tab.url])
+				if (typeof urls[tab.url] == "undefined")
 				{
 					urls[tab.url] = true;
 				} else {
-					closedNumber++;
 					tab.close();
 				}
 			}
@@ -174,14 +176,14 @@
 			for (var i = 0; i < tabs.length; i++)
 			{
 				var tab = tabs[i];
-				if (!tab.browserWindow)
+				if (typeof tab.browserWindow == "undefined")
 				{
 					continue;
 				}
 
 				var sign = this._getSign(tab.url);
 
-				if (!similar[sign])
+				if (typeof similar[sign] == "undefined")
 				{
 					similar[sign] = {
 						group: null,
@@ -203,7 +205,7 @@
 		 */
 		this._getSign = function(url)
 		{
-			if (typeof "url" !== "string")
+			if (typeof url !== "string")
 				url = "";
 
 			var sign = "";
