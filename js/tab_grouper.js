@@ -8,7 +8,13 @@
 
 	var tabGrouper = new TabGrouper();
 	window.addEventListener("load", function() {
-			tabGrouper.onLoad.call(tabGrouper);
+		tabGrouper.onLoad.call(tabGrouper);
+	}, false);
+
+	window.addEventListener("storage", function(e) {
+		tabGrouper.loadPreferences();
+		tabGrouper.ungroupAll();
+		tabGrouper.groupSimilarTabs();
 	}, false);
 
 	function log(message)
@@ -43,7 +49,7 @@
 				return;
 			}
 
-			this._loadPreferences();
+			this.loadPreferences();
 
 			if (!this._preferences.hideToolbarButton)
 			{
@@ -56,8 +62,6 @@
 					},
 					onclick: function()
 					{
-						_self._loadPreferences();
-
 						if (_self._preferences.closeDuplicates)
 							_self.closeDubplicateTabs.call(_self);
 
@@ -69,7 +73,7 @@
 			opera.contexts.toolbar.addItem(_self._groupButton);
 		};
 
-		this._loadPreferences = function()
+		this.loadPreferences = function()
 		{
 			for (var preference in this._preferences)
 			{
@@ -83,6 +87,11 @@
 			}
 		};
 
+		/**
+		 * ungroup tab group
+		 *
+		 * @param {BrowserTabGroup} tabGroup
+		 */
 		this.ungroup = function(tabGroup)
 		{
 			var tabs = tabGroup.tabs.getAll();
@@ -100,22 +109,43 @@
 		};
 
 		/**
+		 * ungroup all tab groups
+		 */
+		this.ungroupAll = function()
+		{
+			var tabGroups = opera.extension.tabGroups.getAll();
+			for (var i = 0; i < tabGroups.length; i++)
+			{
+				var tabGroup = tabGroups[i];
+				this.ungroup(tabGroup);
+			}
+		};
+
+		/**
 		 * group similar tabs
 		 */
 		this.groupSimilarTabs = function()
 		{
 			var i = 0;
 			var tab;
-
+			var similar = _self.getSimilar();
 			var tabGroups = opera.extension.tabGroups.getAll();
 			for (i = 0; i < tabGroups.length; i++)
 			{
 				var tabGroup = tabGroups[i];
-				this.ungroup(tabGroup);
+				var tabs = tabGroup.tabs.getAll();
+				if (tabs.length > 0)
+				{
+					tab = tabs[0];
+					if (typeof tab.browserWindow == "undefined")
+					{
+						continue;
+					}
+
+					similar[this._getSign(tab.url)].group = tabGroup;
+				}
 			}
 
-
-			var similar = _self.getSimilar();
 			for (var sign in similar)
 			{
 				if (!similar.hasOwnProperty(sign))

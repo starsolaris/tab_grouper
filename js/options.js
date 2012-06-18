@@ -6,11 +6,10 @@
 (function() {
 	"use strict";
 
-	var form;
 	var checkboxList;
 
 	window.addEventListener("DOMContentLoaded", function() {
-		form = document.getElementById("preferences");
+		var form = document.getElementById("preferences");
 		checkboxList = form.querySelectorAll("input[type='checkbox']");
 
 		document.getElementById("save").addEventListener("click", function() {
