@@ -14,7 +14,8 @@
 	window.addEventListener("storage", function(e) {
 		tabGrouper.loadPreferences();
 		tabGrouper.ungroupAll();
-		tabGrouper.groupSimilarTabs();
+
+		tabGrouper.onButtonClick();
 	}, false);
 
 	function log(message)
@@ -62,15 +63,20 @@
 					},
 					onclick: function()
 					{
-						if (_self._preferences.closeDuplicates)
-							_self.closeDubplicateTabs.call(_self);
-
-						_self.groupSimilarTabs.call(_self);
+						_self.onButtonClick.call(_self);
 					}
 				});
 			}
 
 			opera.contexts.toolbar.addItem(_self._groupButton);
+		};
+
+		this.onButtonClick = function()
+		{
+			if (this._preferences.closeDuplicates)
+				this.closeDubplicateTabs();
+
+			this.groupSimilarTabs();
 		};
 
 		this.loadPreferences = function()
