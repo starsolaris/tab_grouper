@@ -13,7 +13,7 @@
 
 	window.addEventListener("storage", function(e) {
 		tabGrouper.loadPreferences();
-		tabGrouper.ungroupAll();
+		// tabGrouper.ungroupAll();
 
 		tabGrouper.onButtonClick();
 	}, false);
@@ -134,7 +134,8 @@
 		{
 			var i = 0;
 			var tab;
-			var similar = _self.getSimilar();
+			var similar;
+			var similarList = _self.getSimilar();
 			var tabGroups = opera.extension.tabGroups.getAll();
 			for (i = 0; i < tabGroups.length; i++)
 			{
@@ -142,35 +143,42 @@
 				var tabs = tabGroup.tabs.getAll();
 				if (tabs.length > 0)
 				{
-					tab = tabs[0];
-					if (typeof tab.browserWindow == "undefined")
+					for (var j = 0; j < tabs.length; j++)
 					{
-						continue;
-					}
+						tab = tabs[j];
+						if (typeof tab.browserWindow == "undefined")
+						{
+							continue;
+						}
 
-					similar[this._getSign(tab.url)].group = tabGroup;
+						similar = similarList[this._getSign(tab.url)];
+						if (!similar.group)
+						{
+							similar.group = tabGroup;
+						}
+					}
 				}
 			}
 
-			for (var sign in similar)
+			for (var sign in similarList)
 			{
-				if (!similar.hasOwnProperty(sign))
+				if (!similarList.hasOwnProperty(sign))
 					continue;
 
-				var element = similar[sign];
-				if (element.list.length > 1)
+				similar = similarList[sign];
+				if (similar.list.length > 1)
 				{
-					if (!element.group)
+					if (!similar.group)
 					{
-						opera.extension.tabGroups.create(element.list, {collapsed: true}, element.list[0]);
+						opera.extension.tabGroups.create(similar.list, {collapsed: true}, similar.list[0]);
 						continue;
 					}
 
-					for (i = 0; i < element.list.length; i++)
+					for (i = 0; i < similar.list.length; i++)
 					{
-						tab = element.list[i];
+						tab = similar.list[i];
 						if (!tab.tabGroup)
-							element.group.insert(tab);
+							similar.group.insert(tab);
 					}
 				}
 			}
