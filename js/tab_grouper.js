@@ -136,10 +136,11 @@
 			var tab;
 			var similar;
 			var similarList = _self.getSimilar();
+			var tabGroup;
 			var tabGroups = opera.extension.tabGroups.getAll();
 			for (i = 0; i < tabGroups.length; i++)
 			{
-				var tabGroup = tabGroups[i];
+				tabGroup = tabGroups[i];
 				var tabs = tabGroup.tabs.getAll();
 				if (tabs.length > 0)
 				{
@@ -182,6 +183,16 @@
 					}
 				}
 			}
+
+			// collapse/expande all tab groups
+			var collapsed = (widget.preferences.getItem("collapsed") == "true");
+			tabGroups = opera.extension.tabGroups.getAll();
+			for (i = 0; i < tabGroups.length; i++)
+			{
+				tabGroup = tabGroups[i];
+				tabGroup.update({collapsed: collapsed});
+			}
+			widget.preferences.setItem("collapsed", String(!collapsed));
 		};
 
 		/**
