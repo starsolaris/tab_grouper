@@ -18,6 +18,12 @@ https://addons.opera.com/ru/extensions/details/tab-grouper/
 
 ### Change History
 
+####v1.4
+
+1. do not ungroup already grouped tabs
+2. tab group can consist several different sites
+3. collapse/expand all tab groups by clicking on "Tab Grouper" icon
+
 ####v1.2
 
 1. add option for "Close duplicate tabs"
