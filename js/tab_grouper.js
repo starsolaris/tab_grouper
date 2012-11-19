@@ -38,7 +38,8 @@
 			groupBySecondLevelDomain: false, // *.second.com, second.com
 			autoGrouping: false,
 			openNewTabInsideCurrentGroup: false,
-			hideToolbarButton: false
+			hideToolbarButton: false,
+			collapse_expand: false
 		};
 
 		this.onLoad = function()
@@ -185,14 +186,17 @@
 			}
 
 			// collapse/expande all tab groups
-			var collapsed = (widget.preferences.getItem("collapsed") == "true");
-			tabGroups = opera.extension.tabGroups.getAll();
-			for (i = 0; i < tabGroups.length; i++)
+			if (this._preferences["collapse_expand"])
 			{
-				tabGroup = tabGroups[i];
-				tabGroup.update({collapsed: collapsed});
+				var collapsed = (widget.preferences.getItem("collapsed") == "true");
+				tabGroups = opera.extension.tabGroups.getAll();
+				for (i = 0; i < tabGroups.length; i++)
+				{
+					tabGroup = tabGroups[i];
+					tabGroup.update({collapsed: collapsed});
+				}
+				widget.preferences.setItem("collapsed", String(!collapsed));
 			}
-			widget.preferences.setItem("collapsed", String(!collapsed));
 		};
 
 		/**

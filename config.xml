@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="1.4" id="https://addons.opera.com/extensions/details/tab-grouper/" href="https://addons.opera.com/extensions/details/tab-grouper/">
+<widget xmlns="http://www.w3.org/ns/widgets" version="1.4.1" id="https://addons.opera.com/extensions/details/tab-grouper/" href="https://addons.opera.com/extensions/details/tab-grouper/">
   <name>Tab Grouper</name>
   <icon src="icons/tab.png"/>
   <author href="https://github.com/starsolaris/tab_grouper" email="itmyaddress@gmail.com">Andrey Starostin</author>
